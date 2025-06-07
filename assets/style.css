@@ -1,6 +1,44 @@
 @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap');
 
 body {
-  margin: 0;
   background-color: #f5f7fa;
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 40px;
+}
+
+h2 {
+  color: #333;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.dashboard-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  padding: 15px;
+  text-align: center;
+  margin: 20px;
+  display: inline-block;
+}
+
+.card img {
+  height: 100px;
+  width: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card p {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #444;
 }
