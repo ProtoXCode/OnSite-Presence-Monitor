@@ -1,15 +1,9 @@
 from dash import Dash, html
-import pandas as pd
-import datetime
 
-# Get the current local time in hh:mm format
-current_time = datetime.datetime.now().strftime('%H:%M')
+from api_client.mock_client import MockERPClient
 
-# Sample data
-df = pd.read_csv('data/sample_data.csv')
-df['image'] = df['id_number'].apply(lambda x: f'assets/employee_images/{x}.png')
-filtered_df = df[
-    (df['clocked_in'] <= current_time) & (df['clocked_out'] >= current_time)]
+erp_client = MockERPClient()
+active_workers = [w for w in erp_client.get_workers() if w.status]
 
 # Initialize Dash app
 app = Dash()
@@ -20,21 +14,22 @@ app.layout = html.Div(style={
     'padding': '40px',
     'fontFamily': 'Segoe UI, sans-serif'
 }, children=[
-    html.H2('INnOUT - Who\'s at Work', style={
+    html.H2('OnSite Presence Monitor', style={
         'textAlign': 'center',
         'color': '#333',
         'marginBottom': '30px'
     }),
     html.Div([
         html.Div([
-            html.Img(src=row['image'], style={
-                'height': '100px',
-                'width': '100px',
-                'objectFit': 'cover',
-                'borderRadius': '50%',
-                'boxShadow': '0 4px 8px rgba(0,0,0,0.1)'
-            }),
-            html.P(row['name'], style={
+            html.Img(src=f'assets/employee_images/{worker.id_number}.png',
+                     style={
+                         'height': '100px',
+                         'width': '100px',
+                         'objectFit': 'cover',
+                         'borderRadius': '50%',
+                         'boxShadow': '0 4px 8px rgba(0,0,0,0.1)'
+                     }),
+            html.P(worker.name, style={
                 'textAlign': 'center',
                 'marginTop': '10px',
                 'fontWeight': 'bold',
@@ -49,12 +44,8 @@ app.layout = html.Div(style={
             'borderRadius': '10px',
             'boxShadow': '0 2px 10px rgba(0,0,0,0.05)'
         })
-        for _, row in filtered_df.iterrows()
-    ], style={
-        'display': 'flex',
-        'flexWrap': 'wrap',
-        'justifyContent': 'center'
-    })
+        for worker in active_workers
+    ])
 ])
 
 if __name__ == '__main__':

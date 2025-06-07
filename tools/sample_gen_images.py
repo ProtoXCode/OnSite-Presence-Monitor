@@ -1,8 +1,9 @@
 import requests
 import os
+from time import sleep
 
 # Target folder
-output_dir = 'assets/employee_images'
+output_dir = '../assets/employee_images_2'
 os.makedirs(output_dir, exist_ok=True)
 
 # Starting ID
@@ -23,3 +24,5 @@ for i in range(total_images):
         print(f'✅ Downloaded {filename}')
     except Exception as e:
         print(f'❌ Failed to download {filename}: {e}')
+
+    sleep(0.5)

@@ -1,0 +1,32 @@
+[project]
+name = "OnSite Presence Monitor"
+version = "0.1.0"
+description = "Dash app for displaying what workers are currently clocked in."
+authors = [
+    { name="Tom Erik Harnes", email="teharnes@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file="LICENSE" }
+
+[pyproject.urls]
+Homepage = "https://github.com/ProtoXCode/OnSite-Presence-Monitor"
+
+[tool.setuptools]
+packages = ["api_client"]
+
+[tool.black]
+line-length = 79
+
+[tool.isort]
+profile = "black"
+
+[build-system]
+requires = [
+    "setuptools>61.0",
+    "wheel",
+    "dash",
+    "dash-bootstrap-components"
+]
+
+build-backend = "setuptools.build_meta"
