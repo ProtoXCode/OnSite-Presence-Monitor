@@ -1,39 +1,72 @@
 @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap');
 
 body {
+  background: linear-gradient(rgba(245, 247, 250, 0.7), rgba(245, 247, 250, 0.7)),
+              url('../assets/bg-factory.png') no-repeat center bottom fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
   background-color: #f5f7fa;
   font-family: 'Segoe UI', sans-serif;
   margin: 0;
-  padding: 40px;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;             /* Kill vertical scroll */
+  display: flex;
+  flex-direction: column;
 }
 
 h2 {
-  color: #333;
+  margin: 20px 0 10px;
   text-align: center;
-  margin-bottom: 30px;
+  color: #222;
+  font-size: 2.4rem;
+  letter-spacing: 1px;
+  font-weight: 700;
+  position: relative;
 }
 
+h2::after {
+  content: '';
+  display: block;
+  width: 475px;
+  height: 4px;
+  margin: 10px auto 0;
+  background-color: #3f51b5;
+  border-radius: 2px;
+}
+
+
 .dashboard-container {
+  flex: 1;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 100px);
+  overflow: auto;               /* Enables vertical scrolling IF needed */
 }
 
 .card {
+  flex: 1 1 calc(10% + 60px);   /* Responsive scaling */
+  max-width: 200px;             /* Cap the max width */
+  min-width: 100px;             /* Keeps things from getting too tiny */
   background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border-radius: 25px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.10);
   padding: 15px;
   text-align: center;
-  margin: 20px;
-  display: inline-block;
+  margin: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .card img {
-  height: 100px;
-  width: 100px;
-  object-fit: cover;
+  width: 100%;
+  max-width: 200px;              /* Max image size (no wall-sized faces) */
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
+  object-fit: cover;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
@@ -41,4 +74,13 @@ h2 {
   margin-top: 10px;
   font-weight: bold;
   color: #444;
+}
+
+.empty-message {
+  font-size: 5rem;
+  color: #666;
+  text-align: center;
+  margin-top: 40px;
+  font-style: italic;
+  opacity: 0.7;
 }
