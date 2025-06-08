@@ -7,6 +7,7 @@ from api_client.mock_client import MockERPClient
 from logger import logger
 
 APP_TITLE = 'OnSite Presence Monitor'
+__version__ = '1.0.0'
 
 DEFAULT_CONFIG = {
     'location': 'Factory',
@@ -44,7 +45,34 @@ IMAGE_DIRECTORY = CONFIG['image_directory']
 LOCATION = CONFIG['location']
 
 erp_client = MockERPClient()
-app = Dash(title=APP_TITLE)
+app = Dash(title=APP_TITLE,
+           meta_tags=[
+               {'name': 'viewport', 'content':
+                   'width=device-width, initial-scale=1'},
+               {'name': 'description',
+                'content': 'Live factory presence monitor dashboar'}
+           ])
+
+app.index_string = """
+<!DOCTYPE html>
+<html>
+    <head>
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        {%css%}
+        <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>
+"""
 
 app.layout = html.Div([
     html.H2(APP_TITLE),
