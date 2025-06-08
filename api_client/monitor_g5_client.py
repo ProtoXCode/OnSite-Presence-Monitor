@@ -46,7 +46,7 @@ Returned values are mapped to the UsersList dataclass for use by the app.
 
 class MonitorG5Client(BaseERPClient):
     def __init__(self) -> None:
-        config_path = Path('config.yaml')
+        config_path = Path('../config.yaml')
         if config_path.exists():
             with open(config_path, mode='r', encoding='utf-8') as f:
                 config = yaml.safe_load(f)
