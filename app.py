@@ -113,6 +113,13 @@ app.layout = html.Div([
 ])
 
 
+def get_image_path(worker_id: int) -> str:
+    path = f'{IMAGE_DIRECTORY}{worker_id}.png'
+    if not os.path.exists(path):
+        return 'assets/default.png'
+    return path
+
+
 def render_workers() -> list or html:
     active_workers = [w for w in erp_client.get_workers() if
                       w.status and w.location == LOCATION]
@@ -121,12 +128,6 @@ def render_workers() -> list or html:
     if not active_workers:
         return html.Div("No one is currently clocked in.",
                         className='empty-message')
-
-    def get_image_path(worker_id: int):
-        path = f'{IMAGE_DIRECTORY}{worker_id}.png'
-        if not os.path.exists(path):
-            return 'assets/default.png'
-        return path
 
     return [
         html.Div([

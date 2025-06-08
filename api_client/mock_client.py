@@ -43,15 +43,15 @@ class MockERPClient(BaseERPClient):
             sample_data_path = Path(
                 __file__).parent.parent / 'data' / 'sample_data.csv'
             self.sample_data_path = sample_data_path
-        self.current_time = datetime.now().strftime('%H:%M')
 
     def get_workers(self) -> List[UsersList]:
+        current_time = datetime.now().strftime('%H:%M')
         df = pd.read_csv(self.sample_data_path)
 
         # Checks if sample user is clocked in.
         df['status'] = (
-                (df['clocked_in'] <= self.current_time) &
-                (df['clocked_out'] >= self.current_time)
+                (df['clocked_in'] <= current_time) &
+                (df['clocked_out'] >= current_time)
         )
 
         output = [

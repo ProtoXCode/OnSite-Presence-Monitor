@@ -1,8 +1,16 @@
 # OnSite Presence Monitor
 
-A lightweight, dashboard-style web app that shows which employees are currently clocked in — based on ERP attendance data.
+> OnSite Presence Monitor is a web-based dashboard for displaying who is currently clocked in at a worksite — powered by ERP data.
 
 Built with [Dash](https://dash.plotly.com/) and designed to be extendable with real ERP clients (e.g. Monitor G5 API). Comes with a mock client for demo and development.
+
+---
+
+## 🤔 Why Use This?
+
+Evacuation safety, shift tracking, or just visibility — this tool provides a real-time view of who's on site, with photo identification.
+
+Built for kiosks, control rooms, and managers who need clarity without digging into the ERP or displaying sensitive information.
 
 ---
 
@@ -37,6 +45,25 @@ Visit [http://127.0.0.1:8050](http://127.0.0.1:8050) in your browser.
 
 ---
 
+## 🧰 Demo Mode (Mock ERP Client)
+
+The project includes a built-in mock ERP client for testing and demonstration purposes.
+
+This client (`MockERPClient`) simulates real ERP behavior by:
+- Loading employee clock-in/out schedules from a CSV file
+- Filtering active workers based on the current system time
+- Returning user data with names, IDs, and work locations
+- Supporting presence logic for multiple shifts
+
+This allows you to:
+- Run the app locally with zero external dependencies
+- Develop and test features without live ERP access
+- Easily simulate different shift patterns by editing `data/sample_data.csv`
+
+No API keys, servers, or database connections are required in demo mode.
+
+---
+
 ## 📁 Project Structure
 
 ```
@@ -54,6 +81,10 @@ Visit [http://127.0.0.1:8050](http://127.0.0.1:8050) in your browser.
 │   └── sample_data.csv
 ├── logs/
 │   └── presence.log
+├── tests/
+│   ├── test_app.py
+│   ├── test_mock_client.py
+│   └── test_monitor_g5_client.py
 ├── config.yaml
 ├── LICENSE
 ├── logger.py
@@ -75,7 +106,22 @@ class MyERPClient(BaseERPClient):
 
 ---
 
+## 📷 Screenshots
+
+### ✅ Day Shift (Most are clocked in)
+![Day Shift](assets/screenshots/onsite-day-shift.png)
+
+---
+
+### 🌆 Evening Shift (Fewer workers clocked in)
+![Evening Shift](assets/screenshots/onsite-evening-shift.png)
+
+---
+
+### 🚨 Empty State (No One Clocked In)
+![Empty State](assets/screenshots/onsite-empty-state.png)
+
 ## 📝 License
 
-[MIT License](LICENSE)  
+This project is licensed under the [MIT License](LICENSE).  
 © 2025 Tom Erik Harnes
