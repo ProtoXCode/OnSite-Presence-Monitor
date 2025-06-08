@@ -45,12 +45,18 @@ Visit [http://127.0.0.1:8050](http://127.0.0.1:8050) in your browser.
 ├── api_client/
 │   ├── __init__.py
 │   ├── base_client.py
-│   └── mock_client.py
+│   ├── mock_client.py
+│   └── monitor_g5_client.py
 ├── assets/
-│   └── employee_images/
+│   ├── employee_images/
+│   └── style.css
 ├── data/
 │   └── sample_data.csv
+├── logs/
+│   └── presence.log
+├── config.yaml
 ├── LICENSE
+├── logger.py
 └── README.md
 ```
 
