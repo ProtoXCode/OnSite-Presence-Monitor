@@ -1,15 +1,28 @@
 [project]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Manufacturing",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Topic :: Software Development :: User Interfaces",
+    "Topic :: Office/Business :: Scheduling",
+]
+
 name = "OnSite Presence Monitor"
 version = "1.0.0"
 description = "Dash app for displaying what workers are currently clocked in."
 authors = [
-    { name="Tom Erik Harnes", email="teharnes@gmail.com" }
+    { name = "Tom Erik Harnes", email = "teharnes@gmail.com" }
 ]
 readme = "README.md"
 requires-python = ">=3.8"
-license = { file="LICENSE" }
+license = { file = "LICENSE" }
 
-[pyproject.urls]
+[project.urls]
 Homepage = "https://github.com/ProtoXCode/OnSite-Presence-Monitor"
 
 [tool.setuptools]
@@ -27,7 +40,8 @@ requires = [
     "wheel",
     "dash",
     "waitress",
-    "pyyaml"
+    "pyyaml",
+    "pytest"
 ]
 
 build-backend = "setuptools.build_meta"
