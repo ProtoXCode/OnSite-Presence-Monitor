@@ -1,6 +1,6 @@
 [project]
 name = "OnSite Presence Monitor"
-version = "0.1.0"
+version = "1.0.0"
 description = "Dash app for displaying what workers are currently clocked in."
 authors = [
     { name="Tom Erik Harnes", email="teharnes@gmail.com" }
