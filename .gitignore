@@ -176,3 +176,4 @@ cython_debug/
 # OnSite Presence Monitor
 assets/employee_images_fullsize/
 logs/
+config.yaml
