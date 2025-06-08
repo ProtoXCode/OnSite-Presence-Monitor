@@ -6,6 +6,37 @@ from dash import Dash, html, Output, Input, dcc
 from api_client.mock_client import MockERPClient
 from logger import logger
 
+"""
+OnSite Presence Monitor
+=======================
+
+Author: Tom Erik Harnes
+Created: 2025-06
+Version: 1.0.0
+
+A Dash-based dashboard for displaying currently clocked-in employees
+retrieved from a connected ERP system. Primarily designed for use in
+factory and industrial environments, where knowing who is physically
+present on-site is critical for safety, evacuation, and visibility.
+
+Supports:
+- Real-time auto-refresh of presence data
+- Location-based filtering (Factory, Office, Remote)
+- Configurable ERP client (mock, Monitor G5, etc.)
+- Responsive UI with image fallback handling
+- Kiosk mode and production deployment (via Waitress)
+
+Configuration is managed via `config.yaml`, generated automatically
+on first launch if missing. Employee images are loaded from the path
+defined in the config file.
+
+This file is the entry point for both development and production use.
+
+Usage:
+    python app.py             # development mode
+    python run_production.py  # production via Waitress
+"""
+
 APP_TITLE = 'OnSite Presence Monitor'
 __version__ = '1.0.0'
 

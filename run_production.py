@@ -1,8 +1,33 @@
 from waitress import serve
 from app import app
-
 import socket
+
 from logger import logger
+
+"""
+Run OnSite Presence Monitor in Production Mode
+=============================================
+
+Author: Tom Erik Harnes
+Created: 2025-06
+Version: 1.0.0
+
+Starts the OnSite Presence Monitor using the Waitress WSGI server for
+production-ready deployment.
+
+This script should be used instead of app.py in all real deployments,
+as it ensures a stable, multi-threaded server environment.
+
+The app must be accessible on the same network for connected kiosks or
+display clients to show real-time presence data via web browser.
+
+Access:
+    http://<server-ip>:8050
+
+Note:
+- Waitress is used as the WSGI server (pip install waitress)
+- Configuration and ERP integration is managed by the app itself
+"""
 
 
 def get_lan_ip():
