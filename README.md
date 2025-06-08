@@ -79,6 +79,9 @@ No API keys, servers, or database connections are required in demo mode.
 │   └── style.css
 ├── data/
 │   └── sample_data.csv
+├── docs/
+│   ├── CHANGELOG.md
+│   └── TODO.md
 ├── logs/
 │   └── presence.log
 ├── tests/
