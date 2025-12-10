@@ -7,7 +7,7 @@ from typing import List
 class UsersList:
     id_number: int
     name: str
-    location: str
+    location: int
     status: bool
 
 

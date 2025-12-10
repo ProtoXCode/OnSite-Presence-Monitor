@@ -5,3 +5,4 @@ wheel
 waitress
 pyyaml
 pytest
+urllib3

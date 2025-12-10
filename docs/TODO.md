@@ -4,11 +4,12 @@
 
 - ✅ Mock ERP client for demo use
 - 🛠 Monitor G5 client – WIP
-  - [ ] Connect to live API
-  - [ ] Authenticate via config
-  - [ ] Filter based on location data
+  - [X] Connect to live API
+  - [X] Authenticate via config
+  - [X] Filter based on location data
 - [ ] Auto-launch fullscreen kiosk mode (per-device optional config)
 - [ ] Offline fallback display
+- [ ] Reverse proxy with Nginx/Traefik for HTTPS
 
 ## 🐞 Known Gaps
 
@@ -18,7 +19,6 @@
 
 ## 🧪 Test Coverage Ideas
 
-- Add tests for real API response parsing
 - Kiosk rendering on various screen resolutions
 
 ---

@@ -1,4 +1,5 @@
 import requests
+import re
 from typing import List, Dict
 from pathlib import Path
 
@@ -35,98 +36,170 @@ Configuration is loaded from `config.yaml` and includes:
 - erp_api_key: Bearer token for authorization (if required)
 - location: The physical site to filter for (e.g. "Factory")
 
+API URL build:
+https://{host}:8001/{languageCode}/{companyNumber}/api/v1
+- Host          - IP or hostname
+- LanguageCode  - Two letter language code
+- CompanyNumber - Database-number (Ex. 004.1, 004 is the database, 1 company ID) 
+
 Expected API endpoints:
-- GET /v1/TimeRecording/AttendanceIntervals
-- GET /v1/Persons
+- GET /api/v1/TimeRecording/AttendanceChart
+- GET /api/v1/Persons
 
 Returned values are mapped to the UsersList dataclass for use by the app.
-
 """
+
+# Activating DEBUG will print out part of the responses to check filtering.
+DEBUG = False
 
 
 class MonitorG5Client(BaseERPClient):
     def __init__(self) -> None:
-        config_path = Path('../config.yaml')
+        config_path = Path(__file__).resolve().parent.parent / 'config.yaml'
         if config_path.exists():
             with open(config_path, mode='r', encoding='utf-8') as f:
                 config = yaml.safe_load(f)
         else:
-            logger.critical('Config.yaml not found.')
+            logger.critical(f'Config.yaml not found: {config_path}')
             raise FileNotFoundError('config.yaml not found')
 
         self.api_url = config.get('erp_api_url', '').rstrip('/')
+        self.api_user = config.get('erp_api_user', '')
         self.api_key = config.get('erp_api_key', '')
         self.target_location = config.get('location', 'Factory')
+        self.allowed_locations = ['Factory', 'Office']
+        self._validate_api_url(self.api_url)  # Check if URL format is correct
 
         self.session = requests.Session()
-        if self.api_key:
-            self.session.headers.update({
-                'Authorization': f'Bearer {self.api_key}',
-                'Accept': 'application/json'
-            })
+        self.session.verify = False
+
+    def authenticate(self) -> str:
+        """ Authenticate with the Monitor G5 API """
+        header = {
+            'content-type': 'application/json',
+            'cache-control': 'no-cache',
+            'accept': 'application/json'
+        }
+
+        payload = {
+            'Username': self.api_user,
+            'Password': self.api_key,
+            'ForceRelogin': True
+        }
+
+        response = requests.post(
+            url=f'{self.api_url}/login',
+            headers=header,
+            json=payload,
+            verify=False
+        )
+
+        session_id = response.headers['x-monitor-sessionid']
+
+        self.session.headers.update({
+            'accept': 'application/json',
+            'x-monitor-sessionid': session_id
+        })
+
+        return session_id
 
     def get_workers(self) -> List[UsersList]:
-        logger.info('Fetching active intervals from Monitor ERP...')
+        logger.info('Fetching REAL active attendance from Monitor ERP...')
+
         try:
-            intervals = self._fetch_attendance_intervals()
-            person_data = self._fetch_persons()
+            self.authenticate()
+
+            persons = self._fetch_persons()
+            attendance = self._fetch_attendance_chart()
+
+            # Collect only workers who are actively clocked in
+            active_ids = {
+                str(a["EmployeeId"])
+                for a in attendance
+                if not a.get("IsClosedInterval", True)
+            }
 
             workers = []
-            seen = set()
 
-            for interval in intervals:
-                person_id = interval.get('PersonId')
-                if not person_id or person_id in seen:
-                    continue
-
-                person_info = person_data.get(
-                    str(person_id))  # ID might be a string
-                if not person_info:
-                    logger.warning(f'No person info found for ID {person_id}')
-                    continue
-
-                if person_info.get('location') != self.target_location:
+            for pid in active_ids:
+                person = persons.get(pid)
+                if not person:
+                    logger.warning(
+                        f'No person info found for EmployeeId {pid}')
                     continue
 
                 workers.append(UsersList(
-                    id_number=person_id,
-                    name=person_info.get('name', f'ID {person_id}'),
-                    location=person_info.get('location'),
+                    id_number=int(pid),
+                    name=person['name'],
+                    location=person.get('location', None),
                     status=True
                 ))
-                seen.add(person_id)
 
-            logger.info(f'Active filtered workers: {len(workers)}')
+            logger.info(f'Active workers: {len(workers)}')
             return workers
 
         except Exception as e:
             logger.error(f'MonitorG5Client error: {e}')
             return []
 
-    def _fetch_attendance_intervals(self) -> List[dict]:
-        url = f'{self.api_url}/v1/TimeRecording/AttendanceIntervals'
-        res = self.session.get(url)
-        res.raise_for_status()
-        data = res.json()
+    @staticmethod
+    def _validate_api_url(url: str) -> None:
+        """
+        Validates Monitor ERP API URL format:
+        https://host:8001/cc/NNN.X/
 
-        return [
-            i for i in data
-            if not i.get('IsClosedInterval', True)
-               and not i.get('IsBreak', False)
-               and i.get('AbsenceCodeId') is None
-        ]
+        cc    = 2-letter country code
+        NNN   = database number (001, 004, etc.)
+        X     = company ID (Usually 1)
+        """
+
+        pattern = re.compile(
+            r'^https://[A-Za-z0-9.\-]+:8001/[A-Za-z]{2}/[0-9]{3}.[0-9]+/?$'
+        )
+
+        if not pattern.match(url):
+            logger.critical(f'Invalid Monitor ERP API URL: "{url}"')
+            raise ValueError(
+                f'Invalid ERP API URL format: "{url}". '
+                'Expected format: https://host:800/cc/NNN.X/'
+            )
+
+    def _fetch_attendance_chart(self) -> List[dict]:
+        """ Fetch real attendance info with EmployeeId + intervals. """
+        url = f'{self.api_url}/api/v1/TimeRecording/AttendanceChart'
+        res = self.session.get(url)
+
+        if DEBUG:
+            print('\n=== RAW ATTENDANCE CHART RESPONSE ===')
+            print(res.status_code, res.text[:800], '...')  # Trim dump
+            print('=== END RAW ATTENDANCE CHART RESPONSE ===\n')
+
+        res.raise_for_status()
+        return res.json()
 
     def _fetch_persons(self) -> Dict[str, dict]:
-        url = f'{self.api_url}/v1/Persons'
+        """ Gets the entire userbase. """
+        url = f'{self.api_url}/api/v1/Common/Persons'
         res = self.session.get(url)
+
+        if DEBUG:
+            print('\n=== RAW PERSONS RESPONSE ===')
+            print(res.status_code, res.text)  # Print all
+            print('=== END RAW PERSONS RESPONSE ===\n')
+
         res.raise_for_status()
         data = res.json()
 
-        # Turn into {person_id: {name, location}} mapping
-        return {
+        result = {
             str(p['Id']): {
+                'employee_number': p.get('EmployeeNumber'),
                 'name': f"{p.get('FirstName', '')} {p.get('LastName', '')}".strip(),
-                'location': p.get('WorkLocation', 'Unknown')
+                'location': int(p.get('WarehouseId'))
             }
             for p in data
         }
+
+        if DEBUG:
+            print(f'{result=}')
+
+        return result

@@ -1,9 +1,11 @@
+import urllib3
 import os
 
 import yaml
 from dash import Dash, html, Output, Input, dcc
 
-from api_client.mock_client import MockERPClient
+# Change the imported client to mathch your ERP system.
+from api_client.mock_client import MockERPClient as APIClient
 from logger import logger
 
 """
@@ -12,7 +14,7 @@ OnSite Presence Monitor
 
 Author: Tom Erik Harnes
 Created: 2025-06
-Version: 1.0.0
+Version: 1.1.0
 
 A Dash-based dashboard for displaying currently clocked-in employees
 retrieved from a connected ERP system. Primarily designed for use in
@@ -40,11 +42,13 @@ Usage:
 APP_TITLE = 'OnSite Presence Monitor'
 __version__ = '1.0.0'
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 DEFAULT_CONFIG = {
     'location': 'Factory',
     'update_interval': 30000,
     'image_directory': 'assets/employee_images/',
-    'erp_api_url': 'http://localhost:8000/api',
+    'erp_api_url': 'https://{host}:8001/{languageCode}/{companyNumber}/',
     'erp_api_key': '',
     'erp_api_client': '',
     'erp_api_secret': '',
@@ -55,6 +59,7 @@ DEFAULT_CONFIG = {
     'db_user': 'user',
     'db_password': 'password',
     'jwt_secret': '',
+    'location:': 1,
     'jwt_algo': 'HS256'
 }
 
@@ -75,7 +80,7 @@ UPDATE_INTERVAL = CONFIG['update_interval']
 IMAGE_DIRECTORY = CONFIG['image_directory']
 LOCATION = CONFIG['location']
 
-erp_client = MockERPClient()
+erp_client = APIClient()
 app = Dash(title=APP_TITLE,
            meta_tags=[
                {'name': 'viewport', 'content':
@@ -120,7 +125,7 @@ def get_image_path(worker_id: int) -> str:
     return path
 
 
-def render_workers() -> list or html:
+def render_workers() -> list[html.Div] | html.Div:
     active_workers = [w for w in erp_client.get_workers() if
                       w.status and w.location == LOCATION]
     logger.info(f"Active workers updated: {len(active_workers)}")
