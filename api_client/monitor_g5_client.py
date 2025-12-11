@@ -114,9 +114,9 @@ class MonitorG5Client(BaseERPClient):
 
             # Collect only workers who are actively clocked in
             active_ids = {
-                str(a["EmployeeId"])
+                str(a['EmployeeId'])
                 for a in attendance
-                if not a.get("IsClosedInterval", True)
+                if not a.get('IsClosedInterval', True)
             }
 
             workers = []
@@ -128,8 +128,12 @@ class MonitorG5Client(BaseERPClient):
                         f'No person info found for EmployeeId {pid}')
                     continue
 
+                # Use the *employee_number* for display / images,
+                # fall back to pid if for some reason it's missing
+                display_id = person.get('employee_number') or pid
+
                 workers.append(UsersList(
-                    id_number=int(pid),
+                    id_number=int(display_id),
                     name=person['name'],
                     location=person.get('location', None),
                     status=True
@@ -178,14 +182,13 @@ class MonitorG5Client(BaseERPClient):
         return res.json()
 
     def _fetch_persons(self) -> Dict[str, dict]:
-        """ Gets the entire userbase. """
         url = f'{self.api_url}/api/v1/Common/Persons'
         res = self.session.get(url)
 
         if DEBUG:
-            print('\n=== RAW PERSONS RESPONSE ===')
-            print(res.status_code, res.text)  # Print all
-            print('=== END RAW PERSONS RESPONSE ===\n')
+            print("\n=== RAW PERSONS RESPONSE ===")
+            print(res.status_code, res.text)  # Dump all
+            print("=== END RAW PERSONS RESPONSE ===\n")
 
         res.raise_for_status()
         data = res.json()

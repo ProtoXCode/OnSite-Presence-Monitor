@@ -83,3 +83,10 @@ h2::after {
   font-style: italic;
   opacity: 0.7;
 }
+
+@media (max-height: 1080px) {
+  .card {
+    max-width: 100px;
+    min-width: 50px;
+  }
+}

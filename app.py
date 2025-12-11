@@ -14,7 +14,7 @@ OnSite Presence Monitor
 
 Author: Tom Erik Harnes
 Created: 2025-06
-Version: 1.1.0
+Version: 1.1.1
 
 A Dash-based dashboard for displaying currently clocked-in employees
 retrieved from a connected ERP system. Primarily designed for use in
@@ -40,7 +40,7 @@ Usage:
 """
 
 APP_TITLE = 'OnSite Presence Monitor'
-__version__ = '1.0.0'
+__version__ = '1.1.1'
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -128,10 +128,10 @@ def get_image_path(worker_id: int) -> str:
 def render_workers() -> list[html.Div] | html.Div:
     active_workers = [w for w in erp_client.get_workers() if
                       w.status and w.location == LOCATION]
-    logger.info(f"Active workers updated: {len(active_workers)}")
+    logger.info(f'Active workers updated: {len(active_workers)}')
 
     if not active_workers:
-        return html.Div("No one is currently clocked in.",
+        return html.Div('No one is currently clocked in.',
                         className='empty-message')
 
     return [
@@ -140,7 +140,7 @@ def render_workers() -> list[html.Div] | html.Div:
                 src=get_image_path(worker.id_number),
             ),
             html.P(worker.name)
-        ], className="card")
+        ], className='card')
         for worker in active_workers
     ]
 
