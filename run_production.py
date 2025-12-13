@@ -10,7 +10,7 @@ Run OnSite Presence Monitor in Production Mode
 
 Author: Tom Erik Harnes
 Created: 2025-06
-Version: 1.1.1
+Version: 1.1.2
 
 Starts the OnSite Presence Monitor using the Waitress WSGI server for
 production-ready deployment.

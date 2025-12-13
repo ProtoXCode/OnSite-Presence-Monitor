@@ -1,5 +1,6 @@
 import urllib3
 import os
+from pathlib import Path
 
 import yaml
 from dash import Dash, html, Output, Input, dcc
@@ -14,7 +15,7 @@ OnSite Presence Monitor
 
 Author: Tom Erik Harnes
 Created: 2025-06
-Version: 1.1.1
+Version: 1.1.2
 
 A Dash-based dashboard for displaying currently clocked-in employees
 retrieved from a connected ERP system. Primarily designed for use in
@@ -39,13 +40,14 @@ Usage:
     python run_production.py  # production via Waitress
 """
 
-APP_TITLE = 'OnSite Presence Monitor'
-__version__ = '1.1.1'
+APP_TITLE = 'Nortrafo Production'
+__version__ = '1.1.2'
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 DEFAULT_CONFIG = {
-    'location': 'Factory',
+    'header_mode': 'text',  # 'text' | 'logo' | 'both'
+    'company_logo': 'assets/logo.png',
     'update_interval': 30000,
     'image_directory': 'assets/employee_images/',
     'erp_api_url': 'https://{host}:8001/{languageCode}/{companyNumber}/',
@@ -86,7 +88,7 @@ app = Dash(title=APP_TITLE,
                {'name': 'viewport', 'content':
                    'width=device-width, initial-scale=1'},
                {'name': 'description',
-                'content': 'Live factory presence monitor dashboar'}
+                'content': 'Live factory presence monitor dashboard'}
            ])
 
 app.index_string = """
@@ -110,8 +112,32 @@ app.index_string = """
 </html>
 """
 
+
+def render_header() -> html.Div | html.H2:
+    mode = CONFIG.get('header_mode', 'text')
+    logo = CONFIG.get('company_logo')
+
+    if mode == 'logo' and logo and os.path.exists(logo):
+        return html.Div(
+            html.Img(src=logo, className='header-logo'),
+            className='header'
+        )
+
+    if mode == 'both' and logo and os.path.exists(logo):
+        return html.Div(
+            [
+                html.Img(src=logo, className='header-logo'),
+                html.H2(APP_TITLE)
+            ],
+            className='header'
+        )
+
+    # Fallback: text only
+    return html.H2(APP_TITLE)
+
+
 app.layout = html.Div([
-    html.H2(APP_TITLE),
+    render_header(),
     dcc.Interval(id='update-interval', interval=UPDATE_INTERVAL,
                  n_intervals=0),
     html.Div(id='worker-container', className='dashboard-container')
@@ -119,10 +145,21 @@ app.layout = html.Div([
 
 
 def get_image_path(worker_id: int) -> str:
-    path = f'{IMAGE_DIRECTORY}{worker_id}.png'
-    if not os.path.exists(path):
-        return 'assets/default.png'
-    return path
+    """ Returns the absolute path to a worker image. """
+    valid_ext = ('.png', '.jpg', '.jpeg', '.webp')
+    base = Path(IMAGE_DIRECTORY)
+
+    for ext in valid_ext:
+        candidates = base / f'{worker_id}{ext}'
+        if candidates.exists():
+            return str(candidates)
+
+    for file in base.iterdir():
+        if file.stem == str(worker_id) and file.suffix.lower() in valid_ext:
+            return str(file)
+
+    # Fallback default
+    return 'assets/default.png'
 
 
 def render_workers() -> list[html.Div] | html.Div:
