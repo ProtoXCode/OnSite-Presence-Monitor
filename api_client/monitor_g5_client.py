@@ -1,6 +1,5 @@
 import requests
 import re
-from typing import List, Dict
 from pathlib import Path
 
 import yaml
@@ -68,7 +67,7 @@ class MonitorG5Client(BaseERPClient):
         self.api_key = config.get('erp_api_key', '')
         self.target_location = config.get('location', 'Factory')
         self.allowed_locations = ['Factory', 'Office']
-        self._validate_api_url(self.api_url)  # Check if URL format is correct
+        self._validate_api_url(self.api_url)
 
         self.session = requests.Session()
         self.session.verify = False
@@ -103,8 +102,17 @@ class MonitorG5Client(BaseERPClient):
 
         return session_id
 
-    def get_workers(self) -> List[UsersList]:
-        logger.info('Fetching REAL active attendance from Monitor ERP...')
+    def get_workers(self) -> list[UsersList]:
+        """
+        Gets list of workers and attendance data. Filters out based upon the
+        'IsClosedInterval' and 'AbsenceCode' fields.
+
+        Filtering on absence code is nessessary since sickleave can be used
+        with an open interval.
+        """
+        logger.info(
+            f'Fetching active attendance from Monitor ERP server: '
+            f'{self.api_url}')
 
         try:
             self.authenticate()
@@ -117,6 +125,7 @@ class MonitorG5Client(BaseERPClient):
                 str(a['EmployeeId'])
                 for a in attendance
                 if not a.get('IsClosedInterval', True)
+                   and a.get('AbsenceCode') is None
             }
 
             workers = []
@@ -139,8 +148,7 @@ class MonitorG5Client(BaseERPClient):
                     status=True
                 ))
 
-            logger.info(f'Active workers: {len(workers)}')
-            return workers
+            return sorted(workers, key=lambda w: w.name)
 
         except Exception as e:
             logger.error(f'MonitorG5Client error: {e}')
@@ -168,7 +176,7 @@ class MonitorG5Client(BaseERPClient):
                 'Expected format: https://host:800/cc/NNN.X/'
             )
 
-    def _fetch_attendance_chart(self) -> List[dict]:
+    def _fetch_attendance_chart(self) -> list[dict]:
         """ Fetch real attendance info with EmployeeId + intervals. """
         url = f'{self.api_url}/api/v1/TimeRecording/AttendanceChart'
         res = self.session.get(url)
@@ -181,14 +189,14 @@ class MonitorG5Client(BaseERPClient):
         res.raise_for_status()
         return res.json()
 
-    def _fetch_persons(self) -> Dict[str, dict]:
+    def _fetch_persons(self) -> dict[str, dict]:
         url = f'{self.api_url}/api/v1/Common/Persons'
         res = self.session.get(url)
 
         if DEBUG:
-            print("\n=== RAW PERSONS RESPONSE ===")
+            print('\n=== RAW PERSONS RESPONSE ===')
             print(res.status_code, res.text)  # Dump all
-            print("=== END RAW PERSONS RESPONSE ===\n")
+            print('=== END RAW PERSONS RESPONSE ===\n')
 
         res.raise_for_status()
         data = res.json()
@@ -196,7 +204,8 @@ class MonitorG5Client(BaseERPClient):
         result = {
             str(p['Id']): {
                 'employee_number': p.get('EmployeeNumber'),
-                'name': f"{p.get('FirstName', '')} {p.get('LastName', '')}".strip(),
+                'name': f"{p.get('FirstName', '')} "
+                        f"{p.get('LastName', '')}".strip(),
                 'location': int(p.get('WarehouseId'))
             }
             for p in data

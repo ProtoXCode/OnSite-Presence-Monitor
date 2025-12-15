@@ -4,10 +4,11 @@ from pathlib import Path
 
 import yaml
 from dash import Dash, html, Output, Input, dcc
+from flask import request
 
-# Change the imported client to mathch your ERP system.
+# Change the imported client to match your ERP system.
 from api_client.mock_client import MockERPClient as APIClient
-from logger import logger
+from logger import logger, access_logger
 
 """
 OnSite Presence Monitor
@@ -15,7 +16,7 @@ OnSite Presence Monitor
 
 Author: Tom Erik Harnes
 Created: 2025-06
-Version: 1.1.2
+Version: 1.1.3
 
 A Dash-based dashboard for displaying currently clocked-in employees
 retrieved from a connected ERP system. Primarily designed for use in
@@ -41,7 +42,7 @@ Usage:
 """
 
 APP_TITLE = 'Nortrafo Production'
-__version__ = '1.1.2'
+__version__ = '1.1.3'
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -62,7 +63,8 @@ DEFAULT_CONFIG = {
     'db_password': 'password',
     'jwt_secret': '',
     'location:': 1,
-    'jwt_algo': 'HS256'
+    'jwt_algo': 'HS256',
+    'message_no_workers': 'No one is currently clocked in'
 }
 
 
@@ -81,6 +83,7 @@ CONFIG = load_config()
 UPDATE_INTERVAL = CONFIG['update_interval']
 IMAGE_DIRECTORY = CONFIG['image_directory']
 LOCATION = CONFIG['location']
+MESSAGE_NO_WORKERS = CONFIG['message_no_workers']
 
 erp_client = APIClient()
 app = Dash(title=APP_TITLE,
@@ -90,6 +93,8 @@ app = Dash(title=APP_TITLE,
                {'name': 'description',
                 'content': 'Live factory presence monitor dashboard'}
            ])
+
+server = app.server
 
 app.index_string = """
 <!DOCTYPE html>
@@ -168,8 +173,7 @@ def render_workers() -> list[html.Div] | html.Div:
     logger.info(f'Active workers updated: {len(active_workers)}')
 
     if not active_workers:
-        return html.Div('No one is currently clocked in.',
-                        className='empty-message')
+        return html.Div(MESSAGE_NO_WORKERS, className='empty-message')
 
     return [
         html.Div([
@@ -186,6 +190,18 @@ def render_workers() -> list[html.Div] | html.Div:
     Output('worker-container', 'children'),
     Input('update-interval', 'n_intervals'))
 def update_worker_cards(_):
+    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    user_agent = request.headers.get('User-Agent', 'Unknown')
+
+    access_logger.info(
+        'refresh',
+        extra={
+            'client_ip': client_ip,
+            'path': '/refresh',
+            'user_agent': user_agent
+        }
+    )
+
     return render_workers()
 
 
