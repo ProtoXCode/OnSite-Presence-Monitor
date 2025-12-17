@@ -10,13 +10,14 @@ from flask import request
 from api_client.mock_client import MockERPClient as APIClient
 from logger import logger, access_logger
 
+__version__ = '1.1.3'
+
 """
 OnSite Presence Monitor
 =======================
 
 Author: Tom Erik Harnes
 Created: 2025-06
-Version: 1.1.3
 
 A Dash-based dashboard for displaying currently clocked-in employees
 retrieved from a connected ERP system. Primarily designed for use in
@@ -41,15 +42,13 @@ Usage:
     python run_production.py  # production via Waitress
 """
 
-APP_TITLE = 'OnSite Presence Monitor'
-__version__ = '1.1.3'
-
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 DEFAULT_CONFIG = {
+    'app_title': 'OnSitePresence Monitor',
     'header_mode': 'text',  # 'text' | 'logo' | 'both'
     'company_logo': 'assets/logo.png',
-    'update_interval': 30000,
+    'update_interval_seconds': 30,
     'image_directory': 'assets/employee_images/',
     'erp_api_url': 'https://{host}:8001/{languageCode}/{companyNumber}/',
     'erp_api_key': '',
@@ -62,7 +61,7 @@ DEFAULT_CONFIG = {
     'db_user': 'user',
     'db_password': 'password',
     'jwt_secret': '',
-    'location:': 1,
+    'location': 1,
     'jwt_algo': 'HS256',
     'message_no_workers': 'No one is currently clocked in'
 }
@@ -80,10 +79,11 @@ def load_config(path='config.yaml') -> dict:
 
 
 CONFIG = load_config()
-UPDATE_INTERVAL = CONFIG['update_interval']
+UPDATE_INTERVAL = CONFIG['update_interval_seconds'] * 1000  # Convert to ms
 IMAGE_DIRECTORY = CONFIG['image_directory']
 LOCATION = CONFIG['location']
 MESSAGE_NO_WORKERS = CONFIG['message_no_workers']
+APP_TITLE = CONFIG['app_title']
 
 erp_client = APIClient()
 app = Dash(title=APP_TITLE,
