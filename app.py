@@ -41,7 +41,7 @@ Usage:
     python run_production.py  # production via Waitress
 """
 
-APP_TITLE = 'Nortrafo Production'
+APP_TITLE = 'OnSite Presence Monitor'
 __version__ = '1.1.3'
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -154,14 +154,22 @@ def get_image_path(worker_id: int) -> str:
     valid_ext = ('.png', '.jpg', '.jpeg', '.webp')
     base = Path(IMAGE_DIRECTORY)
 
-    for ext in valid_ext:
-        candidates = base / f'{worker_id}{ext}'
-        if candidates.exists():
-            return str(candidates)
+    try:
+        for ext in valid_ext:
+            candidates = base / f'{worker_id}{ext}'
+            if candidates.exists():
+                return str(candidates)
 
-    for file in base.iterdir():
-        if file.stem == str(worker_id) and file.suffix.lower() in valid_ext:
-            return str(file)
+        for file in base.iterdir():
+            if (file.stem == str(worker_id) and
+                    file.suffix.lower() in valid_ext):
+                return str(file)  # Checks for perfect match
+            elif (str(worker_id) in file.stem and
+                  file.suffix.lower() in valid_ext):
+                return str(file)  # Checks for partial match
+
+    except (FileNotFoundError, PermissionError, OSError):
+        pass  # Network share offline, permission error, etc.
 
     # Fallback default
     return 'assets/default.png'
