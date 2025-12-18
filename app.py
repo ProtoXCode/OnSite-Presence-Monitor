@@ -10,7 +10,7 @@ from flask import request
 from api_client.mock_client import MockERPClient as APIClient
 from logger import logger, access_logger
 
-__version__ = '1.1.3'
+__version__ = '1.1.4'
 
 """
 OnSite Presence Monitor
@@ -46,10 +46,12 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 DEFAULT_CONFIG = {
     'app_title': 'OnSitePresence Monitor',
-    'header_mode': 'text',  # 'text' | 'logo' | 'both'
+    'header_mode': 'both',  # text | logo | both
+    'worker_card_mode': 'image_name',  # image_name | name_only | name_logo
     'company_logo': 'assets/logo.png',
     'update_interval_seconds': 30,
     'image_directory': 'assets/employee_images/',
+    'department_logo_directory': 'assets/department_logos/',
     'erp_api_url': 'https://{host}:8001/{languageCode}/{companyNumber}/',
     'erp_api_key': '',
     'erp_api_client': '',
@@ -84,6 +86,7 @@ IMAGE_DIRECTORY = CONFIG['image_directory']
 LOCATION = CONFIG['location']
 MESSAGE_NO_WORKERS = CONFIG['message_no_workers']
 APP_TITLE = CONFIG['app_title']
+JPEG_WEBP = ('.png', '.jpg', '.jpeg', '.webp')
 
 erp_client = APIClient()
 app = Dash(title=APP_TITLE,
@@ -151,21 +154,20 @@ app.layout = html.Div([
 
 def get_image_path(worker_id: int) -> str:
     """ Returns the absolute path to a worker image. """
-    valid_ext = ('.png', '.jpg', '.jpeg', '.webp')
     base = Path(IMAGE_DIRECTORY)
 
     try:
-        for ext in valid_ext:
+        for ext in JPEG_WEBP:
             candidates = base / f'{worker_id}{ext}'
             if candidates.exists():
                 return str(candidates)
 
         for file in base.iterdir():
             if (file.stem == str(worker_id) and
-                    file.suffix.lower() in valid_ext):
+                    file.suffix.lower() in JPEG_WEBP):
                 return str(file)  # Checks for perfect match
             elif (str(worker_id) in file.stem and
-                  file.suffix.lower() in valid_ext):
+                  file.suffix.lower() in JPEG_WEBP):
                 return str(file)  # Checks for partial match
 
     except (FileNotFoundError, PermissionError, OSError):
@@ -173,6 +175,19 @@ def get_image_path(worker_id: int) -> str:
 
     # Fallback default
     return 'assets/default.png'
+
+
+def get_department_logo(department: str) -> str:
+    base = Path(CONFIG['department_logo_directory'])
+    if not department:
+        return 'assets/default_dept.png'
+
+    for ext in JPEG_WEBP:
+        p = base / f'{department}{ext}'
+        if p.exists():
+            return str(p)
+
+    return 'assets/default_dept.png'
 
 
 def render_workers() -> list[html.Div] | html.Div:
@@ -184,14 +199,45 @@ def render_workers() -> list[html.Div] | html.Div:
         return html.Div(MESSAGE_NO_WORKERS, className='empty-message')
 
     return [
-        html.Div([
-            html.Img(
-                src=get_image_path(worker.id_number),
-            ),
-            html.P(worker.name)
-        ], className='card')
+        render_worker_card(worker)
         for worker in active_workers
     ]
+
+
+def render_worker_card(worker) -> html.Div:
+    mode = CONFIG.get('worker_card_mode', 'image_name')
+
+    children = []
+
+    if mode == 'image_name':
+        children.extend([
+            html.Img(src=get_image_path(worker.id_number)),
+            html.P(worker.name)
+        ])
+
+    elif mode == 'name_only':
+        children.append(
+            html.P(worker.name, className='name_only')
+        )
+        return html.Div(
+            children,
+            className='card name-only-card badge-blue'
+        )
+
+    elif mode == 'name_logo':
+        children.extend([
+            html.Img(
+                src=get_department_logo(worker.department),
+                className='dept_logo'
+            ),
+            html.P(worker.name)
+        ])
+
+    else:
+        # Fallback so nothing ever breaks the kiosk
+        children.append(html.P(worker.name))
+
+    return html.Div(children, className='card')
 
 
 @app.callback(

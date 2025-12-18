@@ -1,16 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap');
 
 body {
-  background: linear-gradient(rgba(245, 247, 250, 0.7), rgba(245, 247, 250, 0.7)),
-              url('../assets/bg-factory.png') no-repeat center bottom fixed;
-  background-repeat: no-repeat;
-  background-size: cover;
   background-color: #f5f7fa;
+  background-image:
+    linear-gradient(
+      rgba(245, 247, 250, 0.4),
+      rgba(245, 247, 250, 0.7)
+    ),
+    url('../assets/bg-factory.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+
   font-family: 'Segoe UI', sans-serif;
   margin: 0;
   padding: 0;
   height: 100vh;
-  overflow: hidden;             /* Kill vertical scroll */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -75,6 +81,47 @@ h2::after {
   color: #444;
 }
 
+.card.name-only-card {
+  flex: 1 1 calc(15% + 120px);
+  max-width: 200px;
+  min-width: 150px;
+  height: 50px;
+  padding: 22px 20px;
+  justify-content: center;
+
+  /*border-left: 12px solid var(--badge-color, #3f51b5);*/
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #dbe2ff 100%
+  );
+}
+
+
+.name-only {
+  font-size: clamp(3.1rem, 6vw, 4.4rem);
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+  color: #222;
+  margin: 0;
+  white-space: normal;
+  word-break: keep-all;
+}
+
+
+.badge-blue   { --badge-color: #3f51b5; }
+.badge-green  { --badge-color: #2e7d32; }
+.badge-orange { --badge-color: #ef6c00; }
+.badge-red    { --badge-color: #c62828; }
+.badge-gray   { --badge-color: #616161; }
+
+
+.dept-logo {
+  height: 48px;
+  margin-bottom: 0.5rem;
+}
+
 .empty-message {
   font-size: 5rem;
   color: #666;
@@ -84,9 +131,45 @@ h2::after {
   opacity: 0.7;
 }
 
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.header-logo {
+  max-height: 80px;
+  max-width: 300px;
+  object-fit: contain;
+}
+
+@media (max-height: 1440px) {
+  .card {
+    max-width: 150px;
+    min-width: 100px;
+  }
+}
+
 @media (max-height: 1080px) {
   .card {
     max-width: 100px;
     min-width: 50px;
+  }
+
+  .card.name-only.card {
+    max-width: 200px;
+    min-width: 125px;
+  }
+
+  .name-only {
+    font-size: clamp(3rem, 6vw, 4.4rem);
+  }
+
+}
+
+@media (max-width: 768px) {
+  .name-only {
+    font-size: 2rem;
   }
 }

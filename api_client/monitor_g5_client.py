@@ -145,6 +145,7 @@ class MonitorG5Client(BaseERPClient):
                     id_number=int(display_id),
                     name=person['name'],
                     location=person.get('location', None),
+                    department=person.get('department', 0),
                     status=True
                 ))
 
@@ -206,7 +207,8 @@ class MonitorG5Client(BaseERPClient):
                 'employee_number': p.get('EmployeeNumber'),
                 'name': f"{p.get('FirstName', '')} "
                         f"{p.get('LastName', '')}".strip(),
-                'location': int(p.get('WarehouseId'))
+                'location': int(p.get('WarehouseId')),
+                'department': int(p.get('DepartmentId'))
             }
             for p in data
         }

@@ -1,4 +1,3 @@
-from typing import List
 from datetime import datetime
 from pathlib import Path
 
@@ -44,7 +43,7 @@ class MockERPClient(BaseERPClient):
                 __file__).parent.parent / 'data' / 'sample_data.csv'
             self.sample_data_path = sample_data_path
 
-    def get_workers(self) -> List[UsersList]:
+    def get_workers(self) -> list[UsersList]:
         current_time = datetime.now().strftime('%H:%M')
         df = pd.read_csv(self.sample_data_path)
 
@@ -59,6 +58,7 @@ class MockERPClient(BaseERPClient):
                 id_number=row['id_number'],
                 name=row['name'],
                 location=row['location'],
+                department=row.get('department', 0),
                 status=row['status']
             )
             for _, row in df.iterrows()
