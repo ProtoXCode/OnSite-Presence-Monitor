@@ -174,7 +174,7 @@ class MonitorG5Client(BaseERPClient):
             logger.critical(f'Invalid Monitor ERP API URL: "{url}"')
             raise ValueError(
                 f'Invalid ERP API URL format: "{url}". '
-                'Expected format: https://host:800/cc/NNN.X/'
+                'Expected format: https://host:8001/cc/NNN.X/'
             )
 
     def _fetch_attendance_chart(self) -> list[dict]:
