@@ -53,6 +53,7 @@ DEFAULT_CONFIG = {
     'image_directory': 'assets/employee_images/',
     'department_logo_directory': 'assets/department_logos/',
     'erp_api_url': 'https://{host}:8001/{languageCode}/{companyNumber}/',
+    'erp_api_user': '',
     'erp_api_key': '',
     'erp_api_client': '',
     'erp_api_secret': '',
