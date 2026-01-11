@@ -29,7 +29,7 @@ access_handler.setFormatter(
 
 console_handler = logging.StreamHandler()
 console_handler.setFormatter(
-    logging.Formatter('%(levelname)s - %(message)s'))
+    logging.Formatter('[%(asctime)s] %(levelname)s - %(message)s'))
 
 
 class AccessDefaultsFilter(logging.Filter):
